@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小兒脫水與輸液計算機</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* 螢幕顯示樣式 */
+    body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .card { border: none; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .card-header { background-color: #fff; border-bottom: 1px solid #eee; font-weight: bold; border-radius: 12px 12px 0 0 !important; }
+    .result-box { background-color: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+    .result-title { font-size: 0.9rem; color: #6c757d; margin-bottom: 5px; }
+    .result-value { font-size: 1.5rem; font-weight: bold; color: #212529; }
+    .alert-aap { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 10px 15px; margin-top: 15px; font-size: 0.9rem; }
+
+    /* --- 列印專屬樣式 (Export to PDF) --- */
+    @media print {
+      /* 隱藏網頁互動介面 */
+      .d-print-none { display: none !important; }
+      
+      /* 設定列印頁面與文字顏色 */
+      body { background-color: #fff; color: #000; font-size: 12pt; }
+      
+      /* 列印區塊顯示 */
+      #print-section { display: block !important; }
+      
+      /* 醫囑單排版 */
+      .print-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+      .print-row { display: flex; justify-content: space-between; margin-bottom: 15px; }
+      .print-box { border: 1px solid #000; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+      .print-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+      .print-table th, .print-table td { border: 1px solid #000; padding: 8px; text-align: left; }
+      .print-table th { background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .signature-area { margin-top: 50px; text-align: right; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 網頁互動區塊 (列印時隱藏) -->
+<div class="container py-4 d-print-none">
+  <h2 class="text-center mb-4">小兒脫水與輸液計算機</h2>
+  
+  <div class="row">
+    <!-- 左側輸入區 -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header text-primary">1. 病患資料與臨床評估</div>
+        <div class="card-body">
+          <form id="calcForm">
+            <!-- 新增病患資訊 (供列印使用) -->
+            <div class="row mb-3">
+              <div class="col-6">
+                <label class="form-label">病歷號 (選填)</label>
+                <input type="text" class="form-control" id="patientId" placeholder="例如: 12345678">
+              </div>
+              <div class="col-6">
+                <label class="form-label">姓名 (選填)</label>
+                <input type="text" class="form-control" id="patientName" placeholder="例如: 王小明">
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-6">
+                <label class="form-label text-danger fw-bold">目前體重 (kg) *</label>
+                <input type="number" class="form-control border-danger" id="weight" step="0.1" min="1" required placeholder="必填">
+              </div>
+              <div class="col-6">
+                <label class="form-label">急診已給予 Bolus (ml)</label>
+                <input type="number" class="form-control" id="bolus" value="0" min="0">
+              </div>
+            </div>
+
+            <hr>
+            <h6 class="mb-3 text-secondary">Clinical Dehydration Scale (CDS)</h6>
+            
+            <div class="mb-3">
+              <label class="form-label">外觀與精神狀態</label>
+              <select class="form-select" id="appearance">
+                <option value="0">正常 (0分)</option>
+                <option value="1">躁動 / 易口渴 (1分)</option>
+                <option value="2">嗜睡 / 無力 (2分)</option>
+              </select>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">眼睛凹陷程度</label>
+              <select class="form-select" id="eyes">
+                <option value="0">正常 (0分)</option>
+                <option value="1">輕微凹陷 (1分)</option>
+                <option value="2">嚴重凹陷 (2分)</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">口腔黏膜</label>
+              <select class="form-select" id="mucous">
+                <option value="0">濕潤 (0分)</option>
+                <option value="1">黏稠 (1分)</option>
+                <option value="2">乾燥 (2分)</option>
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label">眼淚量</label>
+              <select class="form-select" id="tears">
+                <option value="0">正常 (0分)</option>
+                <option value="1">減少 (1分)</option>
+                <option value="2">無眼淚 (2分)</option>
+              </select>
+            </div>
+
+            <button type="button" class="btn btn-primary w-100 py-2 mb-2" onclick="calculate()">產生輸液計畫</button>
+            <button type="button" class="btn btn-outline-secondary w-100 py-2" id="printBtn" onclick="printOrder()" disabled>🖨️ 匯出 / 列印醫囑單 (PDF)</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右側結果區 -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header text-success">2. 臨床決策建議</div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-6">
+              <div class="result-box">
+                <div class="result-title">脫水評估結果</div>
+                <div class="result-value text-primary" id="resSeverity">--</div>
+                <small class="text-muted" id="resScore">CDS: 0 分 (缺水 0%)</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="result-box">
+                <div class="result-title">總輸液需求 (24hr)</div>
+                <div class="result-value" id="resTotalVol">0 ml</div>
+                <small class="text-muted" id="resVolDetail">維持 0 + 剩餘缺水 0</small>
+              </div>
+            </div>
+          </div>
+
+          <h6 class="mt-3 text-secondary">階段輸液速率 (IV Drip Rate)</h6>
+          <div class="row">
+            <div class="col-6">
+              <div class="result-box border border-warning" style="background-color: #fffaf0;">
+                <div class="result-title">前 8 小時</div>
+                <div class="result-value text-warning" id="resRate8">0.0 <span style="font-size:1rem;">ml/hr</span></div>
+                <small class="text-muted" id="resVol8">總量: 0 ml</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="result-box border border-info" style="background-color: #f0f8ff;">
+                <div class="result-title">後 16 小時</div>
+                <div class="result-value text-info" id="resRate16">0.0 <span style="font-size:1rem;">ml/hr</span></div>
+                <small class="text-muted" id="resVol16">總量: 0 ml</small>
+              </div>
+            </div>
+          </div>
+
+          <h6 class="mt-3 text-secondary">電解質與點滴選擇建議</h6>
+          <div class="result-box">
+            <div class="result-title">建議點滴種類</div>
+            <div class="result-value text-danger" id="resFluid" style="font-size: 1.2rem;">--</div>
+            <hr>
+            <div class="row text-center">
+              <div class="col-6">
+                <div class="result-title">總 Na 需求</div>
+                <div class="fw-bold" id="resNa">0 mEq</div>
+              </div>
+              <div class="col-6">
+                <div class="result-title">總 K 需求</div>
+                <div class="fw-bold" id="resK">0 mEq</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="alert-aap">
+            <strong>⚠️ AAP 臨床指引更新提示：</strong><br>
+            防範醫源性低血鈉，建議第一線維持液應使用等張溶液 (如 0.9% Normal Saline 或 Plasmalyte)。<br>
+            <span class="text-danger">※ 鉀離子(K) 必須在確認病童有排尿（腎功能正常）後才可加入。</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 列印專屬區塊 (平時隱藏) ================= -->
+<div id="print-section" style="display: none;">
+  <div class="print-header">
+    <h2>小兒靜脈輸液治療醫囑單</h2>
+    <p>Pediatric IV Fluid Therapy Order</p>
+  </div>
+
+  <div class="print-row">
+    <div>
+      <strong>病歷號 (Chart No.):</strong> <span id="prtPatientId"></span><br>
+      <strong>病患姓名 (Name):</strong> <span id="prtPatientName"></span>
+    </div>
+    <div>
+      <strong>評估日期/時間:</strong> <span id="prtDateTime"></span><br>
+      <strong>體重 (Weight):</strong> <span id="prtWeight"></span> kg
+    </div>
+  </div>
+
+  <div class="print-box">
+    <h4>一、 臨床評估 (Clinical Assessment)</h4>
+    <p><strong>脫水評分 (CDS):</strong> <span id="prtScore"></span> 分</p>
+    <p><strong>嚴重度判定:</strong> <span id="prtSeverity"></span>，預估脫水百分比: <span id="prtPercent"></span>%</p>
+    <p><strong>已給予急救輸液 (Bolus given):</strong> <span id="prtBolus"></span> ml</p>
+  </div>
+
+  <div class="print-box">
+    <h4>二、 階段輸液醫囑 (IV Orders)</h4>
+    <p><strong>建議點滴液體 (Recommended Fluid):</strong> <span id="prtFluid" style="font-weight: bold; font-size:1.2em; text-decoration: underline;"></span></p>
+    
+    <table class="print-table">
+      <thead>
+        <tr>
+          <th>階段 (Phase)</th>
+          <th>時間區間</th>
+          <th>滴注速率 (IV Rate)</th>
+          <th>階段總量 (Volume)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>第一階段</strong></td>
+          <td>前 8 小時 (0-8 hr)</td>
+          <td><strong style="font-size: 1.2em;" id="prtRate8"></strong> ml/hr</td>
+          <td id="prtVol8"></td>
+        </tr>
+        <tr>
+          <td><strong>第二階段</strong></td>
+          <td>後 16 小時 (9-24 hr)</td>
+          <td><strong style="font-size: 1.2em;" id="prtRate16"></strong> ml/hr</td>
+          <td id="prtVol16"></td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size: 0.9em; color: #333;">*總維持液需求: <span id="prtMaint"></span> ml/day | 總缺水量 (未扣Bolus前): <span id="prtDeficit"></span> ml</p>
+  </div>
+
+  <div class="print-box">
+    <h4>三、 臨床注意事項 (Notes)</h4>
+    <ol>
+      <li>請確認病童有排尿（Urine output > 1 ml/kg/hr）後，方可將鉀離子 (KCl) 加入輸液中。</li>
+      <li>若病童發生劇烈水瀉或頻繁嘔吐，建議依體重額外給予 10 ml/kg/次 之口服電解質液(ORT)或同步增加點滴流速。</li>
+      <li>請密切監測血清電解質變化（特別是 Na 數值），防範醫源性低血鈉。</li>
+    </ol>
+  </div>
+
+  <div class="signature-area">
+    <p><strong>醫師簽章 (Physician Signature):</strong> ___________________________</p>
+  </div>
+</div>
+
+<!-- JavaScript 邏輯 -->
+<script>
+  let latestPlan = null; // 儲存最新計算結果供列印使用
+
+  function calculateCDS(appearance, eyes, mucous, tears) {
+    const score = appearance + eyes + mucous + tears;
+    let severity = '';
+    let suggestedPercent = 0;
+    if (score === 0) { severity = '無脫水'; suggestedPercent = 0; } 
+    else if (score >= 1 && score <= 4) { severity = '輕至中度'; suggestedPercent = 5; } 
+    else { severity = '重度脫水'; suggestedPercent = 10; }
+    return { score, severity, suggestedPercent };
+  }
+
+  function calculateMaintenance(weight) {
+    if (weight <= 0) return 0;
+    if (weight <= 10) return weight * 100;
+    else if (weight <= 20) return 1000 + (weight - 10) * 50;
+    else return 1500 + (weight - 20) * 20;
+  }
+
+  function calculateIVFluidPlan(weight, dehydrationPercent, bolusGivenMl) {
+    const maintenanceTotal = calculateMaintenance(weight);
+    const deficitTotal = weight * dehydrationPercent * 10; 
+    let remainingDeficit = deficitTotal - bolusGivenMl;
+    if (remainingDeficit < 0) remainingDeficit = 0;
+    const first8HrTotal = (maintenanceTotal / 3) + (remainingDeficit / 2);
+    const next16HrTotal = ((maintenanceTotal * 2) / 3) + (remainingDeficit / 2);
+
+    return {
+      maintenanceTotal: Math.round(maintenanceTotal),
+      deficitTotal: Math.round(deficitTotal),
+      remainingDeficit: Math.round(remainingDeficit),
+      first8Hr: { totalVolume: Math.round(first8HrTotal), dripRate: Number((first8HrTotal / 8).toFixed(1)) },
+      next16Hr: { totalVolume: Math.round(next16HrTotal), dripRate: Number((next16HrTotal / 16).toFixed(1)) }
+    };
+  }
+
+  function calculateElectrolytes(maintenanceVol, deficitVol) {
+    const totalNa = ((maintenanceVol / 100) * 3) + ((deficitVol / 1000) * 80);
+    const totalK = ((maintenanceVol / 100) * 2) + ((deficitVol / 1000) * 30);
+    const totalVolumeLiters = (maintenanceVol + deficitVol) / 1000;
+    const targetNaConcentration = totalVolumeLiters > 0 ? (totalNa / totalVolumeLiters) : 0;
+    let suggestedFluid = "";
+    if (targetNaConcentration > 120) suggestedFluid = "0.9% Normal Saline 或 Plasmalyte";
+    else if (targetNaConcentration >= 60) suggestedFluid = "0.45% Half-Normal Saline";
+    else suggestedFluid = "0.33% 食鹽水";
+    return { totalNa: Number(totalNa.toFixed(1)), totalK: Number(totalK.toFixed(1)), suggestedFluid: suggestedFluid };
+  }
+
+  function calculate() {
+    const weight = parseFloat(document.getElementById('weight').value);
+    const bolus = parseFloat(document.getElementById('bolus').value) || 0;
+    if (isNaN(weight) || weight <= 0) { alert("請輸入有效的體重！"); return; }
+
+    const app = parseInt(document.getElementById('appearance').value);
+    const eyes = parseInt(document.getElementById('eyes').value);
+    const muc = parseInt(document.getElementById('mucous').value);
+    const tears = parseInt(document.getElementById('tears').value);
+
+    const cds = calculateCDS(app, eyes, muc, tears);
+    const plan = calculateIVFluidPlan(weight, cds.suggestedPercent, bolus);
+    const electro = calculateElectrolytes(plan.maintenanceTotal, plan.deficitTotal);
+
+    // 更新 DOM 介面
+    document.getElementById('resSeverity').innerText = cds.severity;
+    document.getElementById('resScore').innerText = `CDS: ${cds.score} 分 (預估缺水 ${cds.suggestedPercent}%)`;
+    
+    document.getElementById('resTotalVol').innerText = `${plan.maintenanceTotal + plan.remainingDeficit} ml`;
+    document.getElementById('resVolDetail').innerText = `維持液 ${plan.maintenanceTotal} + 剩餘缺水 ${plan.remainingDeficit}`;
+    
+    document.getElementById('resRate8').innerHTML = `${plan.first8Hr.dripRate} <span style="font-size:1rem;">ml/hr</span>`;
+    document.getElementById('resVol8').innerText = `總量: ${plan.first8Hr.totalVolume} ml`;
+    
+    document.getElementById('resRate16').innerHTML = `${plan.next16Hr.dripRate} <span style="font-size:1rem;">ml/hr</span>`;
+    document.getElementById('resVol16').innerText = `總量: ${plan.next16Hr.totalVolume} ml`;
+
+    document.getElementById('resFluid').innerText = electro.suggestedFluid;
+    document.getElementById('resNa').innerText = `${electro.totalNa} mEq`;
+    document.getElementById('resK').innerText = `${electro.totalK} mEq`;
+
+    // 儲存資料供列印使用，並啟用列印按鈕
+    latestPlan = { weight, bolus, cds, plan, electro };
+    document.getElementById('printBtn').disabled = false;
+  }
+
+  // 將資料寫入隱藏的列印區塊並呼叫瀏覽器列印
+  function printOrder() {
+    if (!latestPlan) return;
+    
+    // 取得當前時間
+    const now = new Date();
+    document.getElementById('prtDateTime').innerText = now.toLocaleString('zh-TW');
+    
+    // 寫入病患資料
+    document.getElementById('prtPatientId').innerText = document.getElementById('patientId').value || "未提供";
+    document.getElementById('prtPatientName').innerText = document.getElementById('patientName').value || "未提供";
+    document.getElementById('prtWeight').innerText = latestPlan.weight;
+
+    // 寫入評估結果
+    document.getElementById('prtScore').innerText = latestPlan.cds.score;
+    document.getElementById('prtSeverity').innerText = latestPlan.cds.severity;
+    document.getElementById('prtPercent').innerText = latestPlan.cds.suggestedPercent;
+    document.getElementById('prtBolus').innerText = latestPlan.bolus;
+    
+    // 寫入醫囑計畫
+    document.getElementById('prtFluid').innerText = latestPlan.electro.suggestedFluid;
+    document.getElementById('prtRate8').innerText = latestPlan.plan.first8Hr.dripRate;
+    document.getElementById('prtVol8').innerText = `${latestPlan.plan.first8Hr.totalVolume} ml`;
+    
+    document.getElementById('prtRate16').innerText = latestPlan.plan.next16Hr.dripRate;
+    document.getElementById('prtVol16').innerText = `${latestPlan.plan.next16Hr.totalVolume} ml`;
+
+    document.getElementById('prtMaint').innerText = latestPlan.plan.maintenanceTotal;
+    document.getElementById('prtDeficit').innerText = latestPlan.plan.deficitTotal;
+
+    // 呼叫瀏覽器列印 (使用者可在此選擇「另存為 PDF」)
+    window.print();
+  }
+</script>
+
+</body>
+</html>
