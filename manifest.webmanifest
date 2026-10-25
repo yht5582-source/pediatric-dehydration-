@@ -1,0 +1,13 @@
+{
+  "name": "小兒脫水與輸液計算機",
+  "short_name": "小兒輸液",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7f6",
+  "theme_color": "#0d6efd",
+  "lang": "zh-TW",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
