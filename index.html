@@ -26,6 +26,51 @@
     .unit { font-size: 1rem; font-weight: normal; }
     @media (min-width: 768px) { .sticky-md { position: sticky; top: 16px; } }
 
+    /* 教學分頁 */
+    .tab-nav { flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 20px; }
+    .tab-nav .nav-link { background-color: #fff; border: 1px solid #dee2e6; }
+    .tab-nav .nav-link.active { background-color: #0d6efd; border-color: #0d6efd; }
+    .teach-narrow { max-width: 920px; margin: 0 auto; }
+    .case-meta { font-size: 0.85rem; color: #6c757d; }
+    .case-q { background-color: #e7f1ff; border-left: 4px solid #0d6efd; padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 12px 0; }
+    .case-output { background-color: #f8f9fa; border-radius: 8px; padding: 12px 14px; font-size: 0.92rem; font-variant-numeric: tabular-nums; }
+    .case-output dl { display: grid; grid-template-columns: max-content 1fr; gap: 3px 14px; margin: 0; }
+    .case-output dt { font-weight: 600; color: #495057; }
+    .case-output dd { margin: 0; }
+    .case-step { margin: 10px 0 0; }
+    .case-step strong { display: block; color: #0a58ca; }
+    .case-pit { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 8px 12px; border-radius: 0 8px 8px 0; margin-top: 12px; font-size: 0.92rem; }
+    .case-src, .quiz-src { font-size: 0.8rem; color: #6c757d; margin-top: 8px; }
+    details > summary { cursor: pointer; color: #0a58ca; font-weight: 600; padding: 4px 0; }
+    .quiz-bar { position: sticky; top: 0; z-index: 5; background-color: #f4f7f6; padding: 8px 0; }
+    .quiz-opt { display: block; width: 100%; text-align: left; background-color: #fff; border: 1px solid #ced4da; border-radius: 8px; padding: 9px 12px; margin-bottom: 7px; color: #212529; }
+    .quiz-opt:hover:enabled { background-color: #f1f6ff; border-color: #0d6efd; }
+    .quiz-opt:disabled { color: #212529; opacity: 1; }
+    .quiz-opt.right { background-color: #d1e7dd; border-color: #198754; font-weight: 600; }
+    .quiz-opt.wrong { background-color: #f8d7da; border-color: #dc3545; }
+    .quiz-exp { background-color: #f8f9fa; border-radius: 8px; padding: 10px 12px; margin-top: 8px; font-size: 0.93rem; }
+    .mm-root { display: inline-block; background-color: #212529; color: #fff; font-weight: 700; border-radius: 10px; padding: 10px 18px; }
+    .mm-branches { margin: 14px 0 0 18px; padding-left: 24px; }
+    .mm-branch { position: relative; display: grid; grid-template-columns: 190px 1fr; gap: 26px; padding: 8px 0; }
+    .mm-branch::before { content: ''; position: absolute; left: -24px; top: 28px; width: 24px; border-top: 2px solid #adb5bd; }
+    .mm-branch::after { content: ''; position: absolute; left: -24px; top: 0; bottom: 0; border-left: 2px solid #adb5bd; }
+    .mm-branch:last-child::after { bottom: auto; height: 28px; }
+    .mm-head { position: relative; align-self: start; width: 100%; min-height: 40px; border: 0; border-radius: 8px; padding: 8px 10px; color: #fff; font-weight: 700; text-align: left; background-color: var(--mm); }
+    .mm-head::after { content: '▾'; float: right; }
+    .mm-head[aria-expanded="false"]::after { content: '▸'; }
+    .mm-leaves { list-style: none; margin: 0; padding: 0 0 0 16px; border-left: 3px solid var(--mm); }
+    .mm-leaves li { background-color: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 6px 10px; margin-bottom: 6px; font-size: 0.92rem; }
+    .mm-leaves li b { color: var(--mm); }
+    .mm-tag { font-size: 0.72rem; color: #6c757d; white-space: nowrap; margin-left: 4px; }
+    @media (max-width: 767.98px) {
+      .mm-branches { margin-left: 6px; padding-left: 16px; }
+      .mm-branch { grid-template-columns: 1fr; gap: 6px; }
+      .mm-branch::before { left: -16px; width: 16px; top: 28px; }
+      .mm-branch::after { left: -16px; }
+      .case-output dl { grid-template-columns: 1fr; }
+      .case-output dt { margin-top: 4px; }
+    }
+
     /* --- 列印專屬樣式 (Export to PDF) --- */
     @media print {
       /* 隱藏網頁互動介面 */
@@ -53,9 +98,21 @@
 <!-- 網頁互動區塊 (列印時隱藏) -->
 <div class="container py-4 d-print-none">
   <h2 class="text-center mb-1">小兒脫水與輸液計算機</h2>
-  <p class="text-center text-muted small mb-4">CDS 評估 · Holliday-Segar 維持液 · AAP 2018 等張維持液 · 高/低血鈉分流</p>
+  <p class="text-center text-muted small mb-3">CDS 評估 · Holliday-Segar 維持液 · AAP 2018 等張維持液 · 高/低血鈉分流</p>
 
-  <div class="row">
+  <ul class="nav nav-pills tab-nav" id="tabNav">
+    <li class="nav-item"><a class="nav-link active" href="#calc" data-view="calc" aria-current="page">計算機</a></li>
+    <li class="nav-item"><a class="nav-link" href="#cases" data-view="cases">示範病例</a></li>
+    <li class="nav-item"><a class="nav-link" href="#quiz" data-view="quiz">考題</a></li>
+    <li class="nav-item"><a class="nav-link" href="#map" data-view="map">心智圖</a></li>
+  </ul>
+
+  <!-- 教學分頁（內容由 TEACH 資料區塊產生） -->
+  <div id="view-cases" class="teach-narrow" hidden></div>
+  <div id="view-quiz" class="teach-narrow" hidden></div>
+  <div id="view-map" hidden></div>
+
+  <div class="row" id="view-calc">
     <!-- 左側輸入區 -->
     <div class="col-md-6">
       <div class="card">
@@ -482,6 +539,254 @@ var PD = (function () {
 if (typeof module !== 'undefined') module.exports = PD;
 /*ENGINE-END*/
 
+/*TEACH-START*/
+// 教學內容（無 DOM），由 tests.cjs 載入並與引擎交叉核對
+var TEACH = (function () {
+  var SRC = [
+    { k: 'CDC', t: 'King CK et al. Managing Acute Gastroenteritis Among Children. MMWR 2003;52(RR-16)', r: '全文', u: 'https://www.cdc.gov/mmwr/preview/mmwrhtml/rr5216a1.htm' },
+    { k: 'NICE CG84', t: 'Diarrhoea and vomiting caused by gastroenteritis in under 5s. NICE CG84', r: '建議全文', u: 'https://www.nice.org.uk/guidance/cg84/chapter/Recommendations' },
+    { k: 'NICE NG29', t: 'Intravenous fluid therapy in children and young people in hospital. NICE NG29（2020 更新）', r: '建議全文', u: 'https://www.nice.org.uk/guidance/ng29/chapter/Recommendations' },
+    { k: 'AAP 2018', t: 'Feld LG et al. Maintenance Intravenous Fluids in Children. Pediatrics 2018;142:e20183083', r: '摘要', u: 'https://doi.org/10.1542/peds.2018-3083' },
+    { k: 'ESPGHAN 2014', t: 'Guarino A et al. ESPGHAN/ESPID guidelines, update 2014. JPGN 2014;59:132', r: '摘要', u: 'https://doi.org/10.1097/MPG.0000000000000375' },
+    { k: 'Friedman 2004', t: 'Friedman JN et al. Development of a clinical dehydration scale. J Pediatr 2004;145:201', r: '摘要', u: 'https://doi.org/10.1016/j.jpeds.2004.05.035' },
+    { k: 'Goldman 2008', t: 'Goldman RD et al. Validation of the clinical dehydration scale. Pediatrics 2008;122:545', r: '摘要', u: 'https://doi.org/10.1542/peds.2007-3141' },
+    { k: 'Kinlin 2012', t: 'Kinlin LM, Freedman SB. Evaluation of a clinical dehydration scale in children requiring IV rehydration. Pediatrics 2012;129:e1211', r: '摘要', u: 'https://doi.org/10.1542/peds.2011-2985' },
+    { k: 'Freedman 2006', t: 'Freedman SB et al. Oral ondansetron for gastroenteritis. N Engl J Med 2006;354:1698', r: '摘要', u: 'https://doi.org/10.1056/NEJMoa055119' },
+    { k: 'Freedman 2016', t: 'Freedman SB et al. Dilute apple juice vs electrolyte solution. JAMA 2016;315:1966', r: '摘要', u: 'https://doi.org/10.1001/jama.2016.5352' },
+    { k: 'Moritz 2005', t: 'Moritz ML, Ayus JC. Preventing neurological complications from dysnatremias. Pediatr Nephrol 2005;20:1687', r: '摘要', u: 'https://doi.org/10.1007/s00467-005-1933-6' }
+  ];
+
+  // input = 帶入計算機的值；expect = tests.cjs 與 PD.plan() 比對的數字
+  var CASES = [
+    {
+      id: 'c1', title: '輕至中度脫水：先別打點滴', tag: 'ORS 首選',
+      who: '18 個月男童，11 kg',
+      story: '腹瀉 1 天（水便 6 次）、嘔吐 2 次。口渴、躁動但可安撫；眼睛正常、舌面黏稠、哭時有淚。微血管回填 <2 秒，今早有尿。無血便、膽汁嘔吐或腹脹。',
+      ask: 'CDS 幾分？該開點滴還是給 ORS？若要給 ORS，量是多少？',
+      input: { weight: 11, ageMonths: 18, bolus: 0, voiding: true, shock: false, appearance: 1, eyes: 0, mucous: 1, tears: 0 },
+      expect: { level: 'some', pct: 5, deficit: 550, remaining: 550, daily: 1050, hours: 24, rates: [78.1, 60.9], vols: [625, 975], total: 1600, bolusMl: null, warn: ['ORS'] },
+      steps: [
+        { h: '評分', t: '外觀 1 + 舌黏稠 1 = CDS 2，屬「部分脫水」，工具預設缺水 5%。' },
+        { h: '途徑', t: '可以喝就給 ORS：CDC 建議 50–100 ml/kg 於 2–4 小時內 = 550–1100 ml；NICE 為 50 ml/kg 於 4 小時內（另加維持量）= 550 ml。' },
+        { h: '給法', t: '從 5 ml（一茶匙）每 5 分鐘開始，耐受後逐步加量；持續嘔吐可改鼻胃管。低滲透壓 ORS 為首選。' },
+        { h: '持續流失', t: '每次水便多補 10 ml/kg = 110 ml；每次嘔吐多補 2 ml/kg = 22 ml。' },
+        { h: '止吐', t: '單劑口服 ondansetron 使 ORS 期間嘔吐由 35% 降到 14%（6 個月–10 歲）；ESPGHAN 提醒常規使用仍需考量心臟安全性。' }
+      ],
+      pitfall: '工具仍會算出靜脈計畫（前 8 小時 78.1、後 16 小時 60.9 ml/hr），那是 ORS 失敗時才用的備案，不是「該打針」的訊號。',
+      src: ['CDC', 'NICE CG84', 'ESPGHAN 2014', 'Freedman 2006']
+    },
+    {
+      id: 'c2', title: '術後禁食：只需維持液', tag: '等張維持液',
+      who: '4 歲女童，16 kg',
+      story: '單純性闌尾炎術後第 0 天，暫時禁食。生命徵象穩定，無脫水徵象（CDS 0），已排尿，Na 136、K 4.0。舊醫囑習慣開 D5 0.45% NaCl。',
+      ask: '維持液量與速率是多少？液體該選哪一種？還要注意什麼？',
+      input: { weight: 16, ageMonths: 48, sodium: 136, bolus: 0, voiding: true, shock: false, appearance: 0, eyes: 0, mucous: 0, tears: 0 },
+      expect: { level: 'none', pct: 0, deficit: 0, remaining: 0, daily: 1300, hourly: 54.2, hours: 24, rates: [54.2, 54.2], vols: [433, 867], total: 1300, bolusMl: null, warn: ['無脫水'] },
+      steps: [
+        { h: '算量', t: '1000 + 6 × 50 = 1300 ml/day = 54.2 ml/hr。無缺水，所以前 8 小時與後 16 小時速率相同。' },
+        { h: '選液', t: 'AAP 2018：28 天至 18 歲需維持液者，用含適量 KCl 與葡萄糖的等張液，可顯著降低低血鈉風險。本例為 D5 0.9% NaCl + KCl 20 mEq/L。' },
+        { h: '為什麼不用 0.45%', t: '術後、疼痛、噁心都可能造成非滲透性 ADH 分泌，低張液的自由水排不掉，血鈉會下降。Moritz 2005 指出這是院內低血鈉腦病變的主要因素。' },
+        { h: '監測', t: 'NICE NG29：開始輸液時驗電解質與血糖，之後至少每 24 小時一次；每日記體重與輸入輸出量。' },
+        { h: '何時減量', t: '有水分滯留風險（非滲透性 ADH）時，NICE 建議考慮限制到維持量的 50–80%，本例相當於 650–1040 ml/day。工具不會自動減量，需由臨床判斷。' }
+      ],
+      pitfall: '能開始進食就停點滴。維持液是橋接，不是術後常規。',
+      src: ['AAP 2018', 'NICE NG29', 'Moritz 2005']
+    },
+    {
+      id: 'c3', title: 'ORS 失敗的中重度脫水', tag: 'Bolus 後算剩餘缺水',
+      who: '2 歲男童，12 kg',
+      story: '輪狀病毒腸胃炎。ORS 與鼻胃管都反覆吐出。嗜睡但碰觸會躁動、眼窩明顯凹陷、舌乾、淚少；脈搏仍可、回填 2–3 秒，無休克。急診已給 NS 240 ml，之後有排尿。Na 138、K 3.8、血糖 78。',
+      ask: 'CDS 幾分？Bolus 要怎麼扣？前 8 小時速率是多少？',
+      input: { weight: 12, ageMonths: 24, sodium: 138, bolus: 240, voiding: true, shock: false, appearance: 1, eyes: 2, mucous: 2, tears: 1 },
+      expect: { level: 'modsev', pct: 10, deficit: 1200, remaining: 960, daily: 1100, hours: 24, rates: [105.8, 75.8], vols: [847, 1213], total: 2060, bolusMl: 240, warn: [] },
+      steps: [
+        { h: '評分', t: '1 + 2 + 2 + 1 = CDS 6，屬中重度，工具以 10% 估算；缺水量 = 12 kg × 100 ml/kg = 1200 ml。' },
+        { h: '扣 Bolus', t: '1200 − 240 = 剩餘缺水 960 ml。' },
+        { h: '分段', t: '維持液 1000 + 2 × 50 = 1100 ml。前 8 小時 = 1100/3 + 960/2 = 847 ml（105.8 ml/hr）；後 16 小時 = 1100×2/3 + 960/2 = 1213 ml（75.8 ml/hr）。' },
+        { h: '液體', t: '已排尿，用 D5 0.9% NaCl + KCl 20 mEq/L。同時有 K 值可參考。' },
+        { h: '轉銜', t: 'NICE：輸液期間就嘗試逐步恢復口服，耐受後停點滴，以 ORS 完成補液。' }
+      ],
+      pitfall: 'NICE 對未休克者以「維持量 + 50 ml/kg」計算（本例 600 ml），比工具依 CDS 取 10% 的 1200 ml 少一半。數字是起點，請依尿量與體重變化調整。',
+      src: ['CDC', 'NICE CG84', 'Goldman 2008']
+    },
+    {
+      id: 'c4', title: '嬰兒休克：先救再算', tag: '休克復甦',
+      who: '6 個月女嬰，7 kg',
+      story: '嘔吐腹瀉 2 天，半天沒有濕尿布。昏睡、四肢冰冷、脈搏微弱、回填 4 秒。CDS 8。骨內針建立後已給 NS 140 ml 兩次（共 280 ml），灌流改善但仍未排尿。尚無鈉值。',
+      ask: '下一次 Bolus 前要想什麼？還沒排尿，輸液怎麼開？',
+      input: { weight: 7, ageMonths: 6, bolus: 280, voiding: false, shock: true, appearance: 2, eyes: 2, mucous: 2, tears: 2 },
+      expect: { level: 'modsev', pct: 10, deficit: 700, remaining: 420, daily: 700, hours: 24, rates: [55.4, 42.3], vols: [443, 677], total: 1120, bolusMl: 140, fluidHas: '暫不加 KCl', warn: ['休克', '尚未確認排尿'] },
+      steps: [
+        { h: '復甦', t: '工具依 CDC：20 ml/kg = 140 ml，推注後立刻重評。NICE 則為每次 10 ml/kg（70 ml）、少於 10 分鐘。CDC 也指出虛弱或營養不良嬰兒宜用 10 ml/kg。' },
+        { h: '已累計 40 ml/kg', t: '280 ÷ 7 = 40 ml/kg。NICE：達 40–60 ml/kg 仍需要輸液就找兒童加護團隊。治療反應不佳時要想到敗血性休克、代謝、心臟或神經疾病。' },
+        { h: '同步檢驗', t: '立即驗血糖、電解質、BUN/Cr、血氣與氯離子；不必等結果才開始復甦。' },
+        { h: '之後的輸液', t: '缺水 700 − 280 = 剩餘 420 ml；維持液 700 ml。前 8 小時 55.4、後 16 小時 42.3 ml/hr，D5 0.9% NaCl 暫不加 KCl。' },
+        { h: '加鉀時機', t: '工具以確認排尿為條件；NICE 的條件是血鉀結果已知。兩者都要看。' }
+      ],
+      pitfall: '常見錯誤是嬰兒照成人開「500 ml NS × 2」，對 2–3 個月大的嬰兒約等於 200 ml/kg。一律以 ml/kg 開立。',
+      src: ['CDC', 'NICE CG84', 'NICE NG29']
+    },
+    {
+      id: 'c5', title: '高血鈉脫水：慢慢來', tag: 'Na ≥150 → 48 小時',
+      who: '10 個月女嬰，9 kg（兩週前健兒門診 9.9 kg）',
+      story: '發燒腹瀉 3 天，家長為了「補營養」把奶粉多加一匙。皮膚摸起來像麵團，很躁動、肌張力偏高、腱反射亢進；回填 2 秒、脈搏好。CDS 4。有尿。Na 158、K 4.2、血糖 110。',
+      ask: 'CDS 說只有部分脫水，可信嗎？缺水量怎麼算？速率是多少？Na 目標是什麼？',
+      input: { weight: 9, preWeight: 9.9, ageMonths: 10, sodium: 158, bolus: 0, voiding: true, shock: false, appearance: 1, eyes: 1, mucous: 1, tears: 1 },
+      expect: { level: 'some', pct: 9.1, deficit: 900, remaining: 900, daily: 900, hours: 48, rates: [56.3, 56.3], vols: [1350, 1350], total: 2700, bolusMl: null, warn: ['高血鈉'] },
+      steps: [
+        { h: '認出來', t: 'NICE：抖動、肌張力增加、反射亢進、抽搐、嗜睡或昏迷時要懷疑高血鈉脫水，並驗血鈉。' },
+        { h: '用體重差', t: '9.9 − 9 = 0.9 kg = 900 ml（9.1%）。近期確實量過的體重比外觀評分更直接。' },
+        { h: '先看灌流', t: '沒有休克就不必為了 Na 給 Bolus；有休克時仍先用等張液復甦。CDC：NS 或 LR 是低血鈉與高血鈉脫水的第一步。' },
+        { h: '48 小時', t: '(900 × 2 + 900) ÷ 48 = 56.3 ml/hr，等張液。NICE：通常 48 小時補足缺水，並緊急尋求專家意見。' },
+        { h: 'Na 目標', t: '下降 <0.5 mEq/L/hr，24 小時不超過 12 mEq/L；本例 24 小時後 Na 不應低於 146。前 24 小時每 4–6 小時驗一次。' },
+        { h: '能喝嗎', t: '未達嚴重脫水者，ORS 同樣有效（CDC、NICE），且 CDC 認為可能比靜脈補液更安全。' }
+      ],
+      pitfall: '工具以 Na ≥150 切換 48 小時方案；CDC 對高血鈉脫水的定義是 >145。Na 146–149 仍請放慢並追蹤。',
+      src: ['NICE CG84', 'NICE NG29', 'CDC']
+    },
+    {
+      id: 'c6', title: '低血鈉合併抽搐', tag: '高張食鹽水',
+      who: '3 歲男童，14 kg',
+      story: '腹瀉 2 天，家長只給白開水和稀釋茶。到院前全身抽搐 3 分鐘，抵院時嗜睡但可喚醒。灌流尚可；CDS 3。有尿。Na 121、血糖 85。',
+      ask: '第一步是什麼？高張液量是多少？之後的輸液與 Na 目標呢？',
+      input: { weight: 14, ageMonths: 36, sodium: 121, bolus: 0, voiding: true, shock: false, appearance: 1, eyes: 1, mucous: 1, tears: 0 },
+      expect: { level: 'some', pct: 5, deficit: 700, remaining: 700, daily: 1200, hours: 24, rates: [93.8, 71.9], vols: [750, 1150], total: 1900, bolusMl: null, warn: ['低血鈉', '3% NaCl'] },
+      steps: [
+        { h: '先處理腦', t: '有症狀的低血鈉是急症。工具建議 3% NaCl 2 ml/kg = 28 ml，10 分鐘推注，症狀持續可重複至 3 次（上限每次 100 ml）。' },
+        { h: '濃度差異', t: 'NICE NG29 用 2.7% NaCl，同樣每次 2 ml/kg、最多 3 次，每次 10–15 分鐘，並立即尋求專家協助。請依院內備用濃度開立。' },
+        { h: '絕不只限水', t: 'NICE 與 Moritz 2005 都明確指出：低血鈉腦病變不能單靠限水處理。' },
+        { h: '補液', t: '症狀控制後算缺水：700 ml + 維持液 1200 ml = 1900 ml；前 8 小時 93.8、後 16 小時 71.9 ml/hr，全程等張液。' },
+        { h: '追蹤', t: '工具設定上升 ≤8–10 mEq/L/24hr；NICE 上限為 12 mEq/L/24hr。用過高張液後，NICE 建議 Na 至少每小時驗一次，症狀緩解後再拉長。' }
+      ],
+      pitfall: '工具的常規提示是每 4–6 小時驗 Na。給高張液後的第一階段要更密集。',
+      src: ['NICE NG29', 'Moritz 2005']
+    },
+    {
+      id: 'c7', title: '學齡兒：體重差勝過評分', tag: '病前體重',
+      who: '7 歲女童，25 kg（3 天前體檢 26.5 kg）',
+      story: '嘔吐腹瀉 2 天，無法進食。外觀疲倦口渴、眼睛稍凹、舌黏稠、淚少；生命徵象穩定。CDS 4。急診給 NS 500 ml 後有尿。Na 134、K 3.6、血糖 92、血氣無酮酸中毒。',
+      ask: 'CDS 適用嗎？缺水量該怎麼估？如果持續水瀉要怎麼補？',
+      input: { weight: 25, preWeight: 26.5, ageMonths: 84, sodium: 134, bolus: 500, voiding: true, shock: false, appearance: 1, eyes: 1, mucous: 1, tears: 1 },
+      expect: { level: 'some', pct: 5.7, deficit: 1500, remaining: 1000, daily: 1600, hours: 24, rates: [129.2, 97.9], vols: [1033, 1567], total: 2600, bolusMl: null, warn: ['1–36'] },
+      steps: [
+        { h: 'CDS 範圍', t: 'CDS 在 1–36 個月發展，Goldman 驗證到 5 歲。7 歲已超出，工具會提示合併其他評估。' },
+        { h: '體重差', t: '26.5 − 25 = 1.5 kg = 1500 ml（5.7%）。CDC 也建議有病前體重時直接相減；若只有生長曲線，估計品質較差。' },
+        { h: '計算', t: '剩餘 1500 − 500 = 1000 ml；維持液 1500 + 5 × 20 = 1600 ml。前 8 小時 129.2、後 16 小時 97.9 ml/hr。' },
+        { h: 'Na 134', t: '工具的低血鈉分流以 <130 為界，本例走等張 24 小時方案；每 24 小時至少複驗。' },
+        { h: '持續流失', t: '每次水便 10 ml/kg = 250 ml，每次嘔吐 2 ml/kg = 50 ml，可用 ORS 或加入靜脈輸液。' },
+        { h: '別漏 DKA', t: '多尿、口渴合併嘔吐的大孩子先看血糖與血氣。DKA 要依專用流程補液，不適用本工具（NICE NG29 1.3.4）。' }
+      ],
+      pitfall: '不同磅秤、衣物與間隔過久都會造成誤差。體重差 >15% 工具會要求再確認。',
+      src: ['Friedman 2004', 'Goldman 2008', 'CDC', 'NICE NG29']
+    },
+    {
+      id: 'c8', title: '新生兒：工具到此為止', tag: '不適用族群',
+      who: '出生 8 天女嬰，目前 2.9 kg（出生 3.4 kg）',
+      story: '足月、純母乳，媽媽覺得奶量不足。尿布減少、嗜睡、吸吮差。回填 3 秒。Na 162、血糖 58。',
+      ask: '把數字輸入工具會發生什麼事？可以直接照開嗎？該怎麼處理？',
+      input: { weight: 2.9, preWeight: 3.4, ageMonths: 0, sodium: 162, bolus: 0, voiding: false, shock: false, appearance: 1, eyes: 1, mucous: 1, tears: 0 },
+      expect: { level: 'some', pct: 14.7, deficit: 500, remaining: 500, daily: 290, hours: 48, rates: [22.5, 22.5], vols: [540, 540], total: 1080, bolusMl: 58, warn: ['新生兒', '高血鈉'] },
+      steps: [
+        { h: '工具的提醒', t: '年齡填 0 個月會跳出紅色警示：新生兒不適用 AAP 等張維持液建議與 CDS。下方數字只是算式結果，不是醫囑。' },
+        { h: '維持量差很多', t: 'Holliday-Segar 算出 290 ml/day（100 ml/kg）。NICE 對 5–28 天足月兒的指引是 120–150 ml/kg/day，即 348–435 ml/day。' },
+        { h: '體重差不等於缺水', t: '出生後本來就有生理性體重下降，用出生體重相減（14.7%）會高估真正的缺水量。' },
+        { h: '怎麼補', t: 'NICE：8 天以上足月兒維持液可用含 5–10% 葡萄糖的等張液；若需復甦為 10–20 ml/kg。高血鈉仍要緩慢矯正，並立即會診新生兒科。' },
+        { h: '找原因', t: '純母乳嬰兒是門診高血鈉神經損傷的高風險族群（Moritz 2005）。除了哺乳評估與支持，也要排除敗血症等其他原因。' }
+      ],
+      pitfall: '工具會因體重差 ≥10% 顯示 Bolus 58 ml。這是通用規則，新生兒是否給予、給多少，請以灌流與新生兒科判斷為準。',
+      src: ['NICE NG29', 'AAP 2018', 'Moritz 2005']
+    }
+  ];
+
+  // a = 正解索引；lv: 'basic' 基礎、'adv' 高階
+  var QUIZ = [
+    { lv: 'basic', q: '下列哪一項不是 Clinical Dehydration Scale (CDS) 的評分項目？', o: ['皮膚彈性', '外觀與精神狀態', '眼睛凹陷', '眼淚量'], a: 0, e: 'CDS 四項為外觀、眼睛、黏膜（舌）、眼淚，總分 0–8。皮膚彈性是有用的臨床徵象，但不在 CDS 內。', s: 'Friedman 2004' },
+    { lv: 'basic', q: 'CDS 總分 3 分，依 Goldman 2008 的分級屬於：', o: ['無脫水', '部分脫水（some）', '中重度脫水', '休克'], a: 1, e: '0 分無脫水、1–4 分部分脫水、5–8 分中重度。休克另由灌流與血壓判斷，不由 CDS 決定。', s: 'Goldman 2008' },
+    { lv: 'basic', q: '15 kg 兒童，Holliday-Segar 每日維持液量是多少？', o: ['1000 ml', '1150 ml', '1250 ml', '1500 ml'], a: 2, e: '前 10 kg 共 1000 ml，後 5 kg × 50 ml = 250 ml，合計 1250 ml/day。', s: 'NICE NG29' },
+    { lv: 'basic', q: '25 kg 兒童，維持液每小時速率約為多少？', o: ['55.0 ml/hr', '60.4 ml/hr', '62.5 ml/hr', '66.7 ml/hr'], a: 3, e: '每日 1500 + 5 × 20 = 1600 ml，除以 24 = 66.7 ml/hr；4-2-1 法則為 40 + 20 + 5 = 65 ml/hr，兩者接近。本工具用每日量 ÷ 24。', s: 'NICE NG29' },
+    { lv: 'basic', q: '18 個月幼兒 CDS 2 分，偶爾嘔吐但能少量喝水，首選處置是：', o: ['ORS，少量多次', '立即放置靜脈留置針', '禁食 24 小時讓腸胃休息', 'NS 20 ml/kg 推注'], a: 0, e: '輕至中度脫水以 ORS 為首選。CDC 指出不需要讓腸胃休息；腸道補液優於靜脈（ESPGHAN 2014）。', s: 'CDC；ESPGHAN 2014' },
+    { lv: 'basic', q: '10 kg 輕至中度脫水幼兒，依 CDC 建議的 ORS 補充量是：', o: ['100–200 ml 於 4 小時', '500–1000 ml 於 2–4 小時', '1000–1500 ml 於 8 小時', '2000 ml 於 24 小時'], a: 1, e: 'CDC：50–100 ml/kg 於 2–4 小時，另補持續流失。NICE 為 50 ml/kg 於 4 小時並加維持量。', s: 'CDC；NICE CG84' },
+    { lv: 'basic', q: '12 kg 幼兒無法測量流失量時，每次水便與每次嘔吐應各補多少？', o: ['水便 60 ml、嘔吐 12 ml', '水便 240 ml、嘔吐 48 ml', '水便 120 ml、嘔吐 24 ml', '水便 24 ml、嘔吐 120 ml'], a: 2, e: '每次水便 10 ml/kg、每次嘔吐 2 ml/kg。', s: 'CDC' },
+    { lv: 'basic', q: '本工具要求靜脈輸液加入 KCl 20 mEq/L 前，必須先確認：', o: ['血清 Na 正常', '血糖正常', '已給完 Bolus', '病童已排尿'], a: 3, e: '工具以確認排尿為條件。NICE CG84 則是「血鉀結果已知後考慮補鉀」，臨床上兩者都要看。', s: 'NICE CG84' },
+    { lv: 'basic', q: '2 歲肺炎住院、不能進食，無 AAP 排除條件，已排尿。維持液應選：', o: ['D5 0.9% NaCl + KCl 20 mEq/L', 'D5 0.45% NaCl + KCl 20 mEq/L', 'D5 0.33% NaCl', 'D5W'], a: 0, e: 'AAP 2018 強建議：28 天至 18 歲使用含適量 KCl 與葡萄糖的等張液，可顯著降低低血鈉風險。', s: 'AAP 2018' },
+    { lv: 'basic', q: '15 kg 兒童有休克徵象，本工具建議的單次 Bolus 是：', o: ['150 ml 0.45% NaCl', '300 ml 0.9% NaCl 或 LR', '500 ml 0.9% NaCl', '300 ml D5W'], a: 1, e: '20 ml/kg = 300 ml 等張晶體液（CDC）。NICE 用 10 ml/kg。復甦液不含葡萄糖，也不用低張液。', s: 'CDC；NICE NG29' },
+
+    { lv: 'adv', q: '12 kg，CDS 6 分無休克，急診已給 NS 240 ml，Na 138。前 8 小時速率應為？', o: ['75.8 ml/hr', '85.8 ml/hr', '105.8 ml/hr', '125.8 ml/hr'], a: 2, e: '缺水 1200 − 240 = 960；維持 1100。前 8 小時 = 1100/3 + 960/2 = 846.7 ml ÷ 8 = 105.8 ml/hr。75.8 是後 16 小時的速率。', s: '本工具算式（見病例 3）' },
+    { lv: 'adv', q: '9 kg 嬰兒，兩週前 9.9 kg，Na 158，無休克。工具算出的均速是？', o: ['37.5 ml/hr', '45.8 ml/hr', '52.1 ml/hr', '56.3 ml/hr'], a: 3, e: '(900 × 2 + 900) ÷ 48 = 56.3 ml/hr。37.5 是只算維持液（未補缺水）的結果。', s: '本工具算式；NICE CG84' },
+    { lv: 'adv', q: '同一位嬰兒 Na 由 158 在 6 小時內降到 151。下一步最合適的是：', o: ['減慢輸液，檢視液體組成與總量，並縮短驗血間隔', '改 D5W 加速矯正', '再給 NS 20 ml/kg 推注', '不用處理，到 24 小時再複驗'], a: 0, e: '下降 7 mEq/L/6 hr ≈ 1.2 mEq/L/hr，超過 NICE 的 <0.5 mEq/L/hr，也快到 12 mEq/L/24hr 上限。過快可造成腦水腫，要放慢。', s: 'NICE CG84；NICE NG29' },
+    { lv: 'adv', q: '14 kg 幼兒，Na 121，到院前抽搐、仍嗜睡。最優先的處置是：', o: ['限水至維持量 50%', '3% NaCl 28 ml 於 10 分鐘推注', 'NS 維持液，4 小時後複驗 Na', 'D5 0.45% NaCl 緩慢輸注'], a: 1, e: '有症狀的低血鈉用高張液：2 ml/kg = 28 ml。NICE 與 Moritz 2005 都指出不可只靠限水。NICE 使用 2.7% 濃度。', s: 'NICE NG29；Moritz 2005' },
+    { lv: 'adv', q: '出生 8 天、2.9 kg 足月兒，工具算出維持液 290 ml/day。為何不能直接照開？', o: ['因為這個體重超出工具可計算的範圍', '因為新生兒不需要維持液', '因為新生兒一律使用 0.45% NaCl', '因為 NICE 對 5–28 天足月兒建議 120–150 ml/kg/day，且 AAP 2018 排除 <28 天'], a: 3, e: '348–435 ml/day 與 290 ml/day 差距明顯。新生兒要依日齡與臨床狀況個別計算。', s: 'NICE NG29；AAP 2018' },
+    { lv: 'adv', q: 'Kinlin 2012 研究需要靜脈補液的腸胃炎兒童，發現 CDS 與體重回升百分比無相關。最恰當的解讀是：', o: ['CDS 應該完全廢棄', 'CDS 分數可以直接換算缺水百分比', 'CDS 不足以單獨決定是否靜脈補液或預測病程', 'CDS 只適用於大於 5 歲的兒童'], a: 2, e: '其結論是資料不支持用 CDS 決定靜脈補液或預測病程；該族群也已篩選為需要靜脈補液者。Goldman 2008 在急診全體腸胃炎族群仍證實分級有效。所以 CDS 是起點，要合併灌流、尿量、體重。', s: 'Kinlin 2012；Goldman 2008' },
+    { lv: 'adv', q: '7 kg 嬰兒已給兩次 Bolus（共 40 ml/kg）仍有灌流不良。下一步最重要的是：', o: ['改用 0.45% NaCl 繼續推注', '給 furosemide 後再評估', '等 Na 回報才決定', '重評診斷（敗血症、心臟、代謝等），並找兒童加護團隊'], a: 3, e: 'NICE NG29：達 40–60 ml/kg 仍需輸液要尋求專家協助。CDC：反應不佳要懷疑其他或合併診斷。CDC 也不建議用利尿劑處理水腫。', s: 'NICE NG29；CDC' },
+    { lv: 'adv', q: '16 kg 兒童有非滲透性 ADH 分泌風險、血容正常。NICE 建議考慮的維持液量是：', o: ['650–1040 ml/day', '1300 ml/day 不變', '1625 ml/day', '只給 2 ml/kg/hr 的 D5W'], a: 0, e: '維持量 1300 ml 的 50–80% = 650–1040 ml/day；同時維持等張液。工具不會自動減量，要由臨床判斷。', s: 'NICE NG29' },
+    { lv: 'adv', q: '10 kg，CDS 2 分（工具估 5%），院外已給 NS 600 ml，血鈉正常。工具的 24 小時總量是？', o: ['1500 ml', '1000 ml', '900 ml', '1600 ml'], a: 1, e: '缺水 500 − 600，下限為 0，不會出現負值；所以只剩維持液 1000 ml，工具也會提示 Bolus 已涵蓋缺水量。', s: '本工具算式' },
+    { lv: 'adv', q: '下列何者屬於 AAP 2018 等張維持液建議的排除族群？', o: ['6 歲闌尾切除術後', '3 歲肺炎合併呼吸窘迫', '2 歲大量水瀉', '1 歲細支氣管炎無法進食'], a: 2, e: '排除：神經外科疾患、心臟病、肝病、癌症、腎功能不全、尿崩症、大量水瀉、嚴重燒傷、<28 天或 NICU、>18 歲。其餘選項都在適用範圍。', s: 'AAP 2018' }
+  ];
+
+  var MAP = {
+    root: '小兒脫水與輸液',
+    branches: [
+      { h: '1. 先看全貌', c: '#0b5ed7', leaves: [
+        { t: '<b>灌流</b>：意識、回填、脈搏、四肢溫度、血壓', s: 'NICE CG84' },
+        { t: '<b>CDS</b>：外觀、眼睛、舌、眼淚 → 0／1–4／5–8', s: 'Goldman 2008' },
+        { t: '<b>體重差</b>：有近期體重時最直接', s: 'CDC' },
+        { t: '<b>別的診斷</b>：膽汁性嘔吐、血便、劇烈腹痛或腹脹、頸僵、前囟膨出、紫斑', s: 'NICE CG84' },
+        { t: '<b>高血鈉線索</b>：抖動、肌張力增加、反射亢進、抽搐', s: 'NICE CG84' }
+      ] },
+      { h: '2. 途徑分流', c: '#198754', leaves: [
+        { t: '<b>無脫水</b>：繼續餵食、多喝；高風險者加 ORS', s: 'NICE CG84' },
+        { t: '<b>輕至中度</b>：ORS 50–100 ml/kg（2–4 小時），每次 5 ml 起', s: 'CDC' },
+        { t: '<b>持續嘔吐</b>：考慮 ondansetron；鼻胃管 ORS', s: 'Freedman 2006；CDC' },
+        { t: '<b>靜脈適應症</b>：休克、ORS 仍惡化、持續吐 ORS', s: 'NICE CG84' },
+        { t: '<b>極輕微脫水 6–60 月</b>：稀釋蘋果汁＋喜好飲料失敗較少（16.7% vs 25.0%）；NICE 仍不鼓勵果汁', s: 'Freedman 2016' }
+      ] },
+      { h: '3. 休克復甦', c: '#b02a37', leaves: [
+        { t: '<b>靜脈或骨內路徑</b>，用不含糖的等張晶體液', s: 'NICE NG29' },
+        { t: '<b>劑量</b>：CDC 20 ml/kg（工具採用）；NICE 10 ml/kg；虛弱或營養不良 10 ml/kg', s: 'CDC；NICE NG29' },
+        { t: '<b>每次後重評</b>，達 40–60 ml/kg 找加護團隊', s: 'NICE NG29' },
+        { t: '<b>同步驗</b>血糖、電解質、血氣', s: 'NICE CG84' },
+        { t: '<b>反應差</b>：想敗血症、代謝、心臟、神經疾病', s: 'CDC' }
+      ] },
+      { h: '4. 靜脈計算', c: '#6f42c1', leaves: [
+        { t: '<b>維持</b>：100–50–20 ml/kg/day，上限 2400（工具設定）', s: 'NICE NG29' },
+        { t: '<b>缺水</b>：體重差 > 手動 > CDS（0／5／10%）', s: '本工具' },
+        { t: '<b>剩餘</b> = 缺水 − 已給 Bolus（下限 0）', s: '本工具' },
+        { t: '<b>分段</b>：前 8 小時 = 維持 1/3 + 剩餘 1/2；後 16 小時 = 維持 2/3 + 剩餘 1/2', s: '本工具' },
+        { t: '<b>持續流失</b>：水便 10 ml/kg／次、嘔吐 2 ml/kg／次', s: 'CDC' }
+      ] },
+      { h: '5. 液體與電解質', c: '#0a7f8c', leaves: [
+        { t: '<b>等張液</b>：D5 0.9% NaCl；D5 Plasma-Lyte 或 D5 LR', s: 'AAP 2018' },
+        { t: '<b>KCl 20 mEq/L</b>：確認排尿；NICE 以血鉀已知為條件', s: 'NICE CG84' },
+        { t: '<b>靜脈補液前後驗</b> Na、K、BUN、Cr、血糖；至少每 24 小時', s: 'NICE NG29' },
+        { t: '<b>ADH 風險</b>：考慮限到維持量 50–80%', s: 'NICE NG29' }
+      ] },
+      { h: '6. 血鈉分流', c: '#c2570c', leaves: [
+        { t: '<b>Na ≥150</b>：48 小時均速，下降 <0.5 mEq/L/hr、≤12 mEq/L/24hr', s: 'NICE CG84／NG29' },
+        { t: '<b>高血鈉監測</b>：每 4–6 小時驗 Na；緊急找專家', s: 'NICE NG29' },
+        { t: '<b>Na <130</b>：等張液，上升 ≤8–10 mEq/L/24hr（NICE 上限 12）', s: '本工具；NICE NG29' },
+        { t: '<b>有症狀低血鈉</b>：3% NaCl 2 ml/kg 於 10 分鐘（NICE 用 2.7%），最多 3 次', s: 'NICE NG29' },
+        { t: '<b>絕不只靠限水</b>處理低血鈉腦病變', s: 'Moritz 2005' }
+      ] },
+      { h: '7. 轉回口服', c: '#495057', leaves: [
+        { t: '<b>輸液中就嘗試</b>口服，耐受就停點滴', s: 'NICE CG84' },
+        { t: '<b>持續哺乳</b>；補液後立刻恢復全濃度奶與平常飲食', s: 'CDC；NICE CG84' },
+        { t: '<b>每日</b>記體重、輸入輸出量與重評', s: 'NICE NG29' },
+        { t: '<b>衛教</b>：何時回診、ORS 怎麼補', s: 'NICE CG84' }
+      ] },
+      { h: '8. 工具不適用', c: '#212529', leaves: [
+        { t: '<b>新生兒 <28 天</b>：維持量依日齡，5–28 天 120–150 ml/kg/day', s: 'NICE NG29' },
+        { t: '<b>DKA</b>：依專用流程', s: 'NICE NG29' },
+        { t: '<b>AAP 排除</b>：神經外科、心、肝、腎、癌症、尿崩症、大量水瀉、嚴重燒傷', s: 'AAP 2018' },
+        { t: '<b>CDS 範圍外</b>：>36 個月合併其他評估', s: 'Friedman 2004' }
+      ] }
+    ]
+  };
+
+  return { SRC: SRC, CASES: CASES, QUIZ: QUIZ, MAP: MAP };
+})();
+if (typeof module !== 'undefined') module.exports = TEACH;
+/*TEACH-END*/
+
   let latestPlan = null; // 儲存最新計算結果供列印使用
   const $ = id => document.getElementById(id);
 
@@ -624,6 +929,201 @@ if (typeof module !== 'undefined') module.exports = PD;
   // 輸入變更即時重算（已有結果時）
   $('calcForm').addEventListener('input', () => calculate(false));
   $('calcForm').addEventListener('change', () => calculate(false));
+
+  // ---------- 教學分頁 ----------
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+
+  function loadCase(c) {
+    $('calcForm').reset();
+    const i = c.input;
+    ['weight', 'preWeight', 'ageMonths', 'sodium', 'bolus'].forEach(k => { if (i[k] !== undefined) $(k).value = i[k]; });
+    ['voiding', 'shock'].forEach(k => { $(k).checked = !!i[k]; });
+    ['appearance', 'eyes', 'mucous', 'tears'].forEach(k => { $(k).value = String(i[k]); });
+    location.hash = 'calc';
+    showView('calc');
+    calculate(true);
+  }
+
+  function renderCaseOutput(c) {
+    const p = PD.plan(c.input);
+    const box = el('div', 'case-output mt-2');
+    const dl = el('dl');
+    const inp = c.input;
+    const rows = [
+      ['帶入值', `體重 ${inp.weight} kg${inp.preWeight ? `（病前 ${inp.preWeight}）` : ''}、CDS ${p.cds.score}${inp.sodium ? `、Na ${inp.sodium}` : ''}${inp.bolus ? `、已給 Bolus ${inp.bolus} ml` : ''}${inp.shock ? '、休克' : ''}、${inp.voiding ? '已排尿' : '未確認排尿'}`],
+      ['判定', `${p.cds.severity}；缺水 ${p.pct}%（${p.pctSource}）= ${p.deficit} ml，剩餘 ${p.remaining} ml`],
+      ['維持液', `${p.maintenance.daily} ml/day（${p.maintenance.hourly} ml/hr）`],
+      ['建議 Bolus', p.bolusAdvice ? p.bolusAdvice.text : '無']
+    ];
+    p.phases.forEach(ph => rows.push([ph.label, `${ph.rate.toFixed(1)} ml/hr（${ph.volume} ml）`]));
+    rows.push(['點滴', p.fluid]);
+    rows.forEach(([k, v]) => { dl.append(el('dt', '', k), el('dd', '', v)); });
+    box.append(el('div', 'fw-bold mb-1', '工具輸出（由計算引擎即時產生）'), dl);
+    return box;
+  }
+
+  function renderCases() {
+    const root = $('view-cases');
+    root.append(el('p', 'text-muted small', '8 例涵蓋本工具的各個分流。先看情境自己想，再展開分析；「帶入計算機」會把數值填入第一頁。人物與數值皆為教學虛構。'));
+    TEACH.CASES.forEach((c, idx) => {
+      const card = el('div', 'card'); card.id = c.id;
+      const body = el('div', 'card-body');
+      const head = el('div', 'd-flex flex-wrap justify-content-between align-items-start gap-2');
+      head.append(el('h5', 'mb-1', `病例 ${idx + 1}：${c.title}`), el('span', 'badge text-bg-primary', c.tag));
+      const det = el('details', 'mt-2');
+      det.append(el('summary', '', '展開分析'), renderCaseOutput(c));
+      c.steps.forEach(s => {
+        const st = el('div', 'case-step');
+        st.append(el('strong', '', s.h), document.createTextNode(s.t));
+        det.append(st);
+      });
+      det.append(el('div', 'case-pit', '⚠️ ' + c.pitfall), el('div', 'case-src', '依據：' + c.src.join('、')));
+      const btn = el('button', 'btn btn-outline-primary btn-sm mt-1', '帶入計算機');
+      btn.type = 'button';
+      btn.addEventListener('click', () => loadCase(c));
+      body.append(head, el('div', 'case-meta', c.who), el('p', 'mt-2 mb-1', c.story), el('div', 'case-q', '❓ ' + c.ask), btn, det);
+      card.append(body);
+      root.append(card);
+    });
+    root.append(renderSources());
+  }
+
+  function renderSources() {
+    const card = el('div', 'card');
+    const body = el('div', 'card-body small');
+    body.append(el('h6', '', '參考來源與核對範圍'));
+    const ul = el('ul', 'mb-1');
+    TEACH.SRC.forEach(s => {
+      const li = el('li');
+      const a = el('a', '', s.t); a.href = s.u; a.target = '_blank'; a.rel = 'noopener';
+      li.append(a, document.createTextNode(`（已讀：${s.r}）`));
+      ul.append(li);
+    });
+    body.append(ul, el('p', 'text-muted mb-0', '僅供教學與臨床輔助，醫囑仍須依病童實際狀況、院內規範與檢驗結果調整。'));
+    card.append(body);
+    return card;
+  }
+
+  let quizLevel = 'all';
+  let quizAnswers = {};
+
+  function renderQuiz() {
+    const root = $('view-quiz');
+    root.replaceChildren();
+    const list = TEACH.QUIZ.map((q, i) => ({ q, i })).filter(x => quizLevel === 'all' || x.q.lv === quizLevel);
+    const done = list.filter(x => quizAnswers[x.i] !== undefined);
+    const right = done.filter(x => quizAnswers[x.i] === x.q.a).length;
+
+    const bar = el('div', 'quiz-bar d-flex flex-wrap gap-2 align-items-center justify-content-between');
+    const group = el('div', 'btn-group btn-group-sm');
+    [['all', '全部 20'], ['basic', '基礎 10'], ['adv', '高階 10']].forEach(([k, label]) => {
+      const b = el('button', 'btn ' + (quizLevel === k ? 'btn-primary' : 'btn-outline-primary'), label);
+      b.type = 'button';
+      b.setAttribute('aria-pressed', quizLevel === k);
+      b.addEventListener('click', () => { quizLevel = k; renderQuiz(); });
+      group.append(b);
+    });
+    const score = el('strong', '', `已答 ${done.length}/${list.length}，答對 ${right}`);
+    score.id = 'quizScore'; score.setAttribute('aria-live', 'polite');
+    const reset = el('button', 'btn btn-outline-secondary btn-sm', '重新作答');
+    reset.type = 'button';
+    reset.addEventListener('click', () => { quizAnswers = {}; renderQuiz(); });
+    bar.append(group, score, reset);
+    root.append(bar);
+
+    list.forEach(({ q, i }, n) => {
+      const card = el('div', 'card'); card.id = 'q' + (i + 1);
+      const body = el('div', 'card-body');
+      const head = el('div', 'd-flex gap-2 align-items-start mb-2');
+      head.append(el('span', 'badge ' + (q.lv === 'adv' ? 'text-bg-danger' : 'text-bg-secondary'), q.lv === 'adv' ? '高階' : '基礎'), el('div', 'fw-semibold', `${n + 1}. ${q.q}`));
+      body.append(head);
+      const picked = quizAnswers[i];
+      q.o.forEach((opt, j) => {
+        const b = el('button', 'quiz-opt', `${'ABCD'[j]}. ${opt}`);
+        b.type = 'button';
+        if (picked !== undefined) {
+          b.disabled = true;
+          if (j === q.a) b.classList.add('right');
+          else if (j === picked) b.classList.add('wrong');
+        }
+        b.addEventListener('click', () => { quizAnswers[i] = j; const y = window.scrollY; renderQuiz(); window.scrollTo(0, y); });
+        body.append(b);
+      });
+      if (picked !== undefined) {
+        const ex = el('div', 'quiz-exp');
+        ex.append(el('strong', picked === q.a ? 'text-success' : 'text-danger', picked === q.a ? '答對。' : `答錯，正解是 ${'ABCD'[q.a]}。`), document.createTextNode(q.e));
+        ex.append(el('div', 'quiz-src', '依據：' + q.s));
+        body.append(ex);
+      }
+      card.append(body);
+      root.append(card);
+    });
+  }
+
+  function renderMap() {
+    const root = $('view-map');
+    const top = el('div', 'd-flex flex-wrap gap-2 align-items-center justify-content-between');
+    top.append(el('div', 'mm-root', TEACH.MAP.root));
+    const tgl = el('button', 'btn btn-outline-secondary btn-sm', '全部收合');
+    tgl.type = 'button';
+    top.append(tgl);
+    const wrap = el('div', 'mm-branches');
+    TEACH.MAP.branches.forEach(b => {
+      const row = el('div', 'mm-branch');
+      row.style.setProperty('--mm', b.c);
+      const head = el('button', 'mm-head', b.h);
+      head.type = 'button';
+      head.setAttribute('aria-expanded', 'true');
+      const ul = el('ul', 'mm-leaves');
+      b.leaves.forEach(l => {
+        const li = el('li');
+        const m = l.t.match(/^<b>(.*?)<\/b>(.*)$/);
+        li.append(el('b', '', m[1]), document.createTextNode(m[2]), el('span', 'mm-tag', l.s));
+        ul.append(li);
+      });
+      head.addEventListener('click', () => {
+        const open = head.getAttribute('aria-expanded') === 'true';
+        head.setAttribute('aria-expanded', String(!open));
+        ul.hidden = open;
+      });
+      row.append(head, ul);
+      wrap.append(row);
+    });
+    tgl.addEventListener('click', () => {
+      const close = tgl.textContent === '全部收合';
+      wrap.querySelectorAll('.mm-head').forEach(h => { h.setAttribute('aria-expanded', String(!close)); });
+      wrap.querySelectorAll('.mm-leaves').forEach(u => { u.hidden = close; });
+      tgl.textContent = close ? '全部展開' : '全部收合';
+    });
+    const card = el('div', 'card');
+    const body = el('div', 'card-body');
+    body.append(top, wrap, el('p', 'text-muted small mt-3 mb-0', '點分支可收合。右側小字為依據；「本工具」表示此處的算法設定。'));
+    card.append(body);
+    root.append(card);
+  }
+
+  function showView(v) {
+    const views = ['calc', 'cases', 'quiz', 'map'];
+    if (!views.includes(v)) v = 'calc';
+    views.forEach(k => { $('view-' + k).hidden = k !== v; });
+    document.querySelectorAll('#tabNav .nav-link').forEach(a => {
+      const on = a.dataset.view === v;
+      a.classList.toggle('active', on);
+      if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
+    window.scrollTo(0, 0);
+  }
+
+  renderCases();
+  renderQuiz();
+  renderMap();
+  window.addEventListener('hashchange', () => showView(location.hash.slice(1)));
+  showView(location.hash.slice(1));
 
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));

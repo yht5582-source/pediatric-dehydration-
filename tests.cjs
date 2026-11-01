@@ -96,5 +96,78 @@ t('新生兒警示', () => assert.ok(P({ ageMonths: 0 }).warnings.some(w => /新
 t('>36 月 CDS 提示', () => assert.ok(P({ ageMonths: 60 }).warnings.some(w => /1–36/.test(w.t))));
 t('輕中度 → ORS 首選', () => assert.ok(P({ appearance: 1 }).warnings.some(w => /ORS/.test(w.t))));
 
+// 教學內容（/*TEACH-START*/…/*TEACH-END*/）與引擎交叉核對
+const tm = html.match(/\/\*TEACH-START\*\/([\s\S]*?)\/\*TEACH-END\*\//);
+if (!tm) throw new Error('teach block not found');
+const tmod = { exports: {} };
+new Function('module', tm[1])(tmod);
+const { CASES, QUIZ, MAP, SRC } = tmod.exports;
+
+console.log('示範病例');
+t('8 例、id 不重複', () => { assert.equal(CASES.length, 8); assert.equal(new Set(CASES.map(c => c.id)).size, 8); });
+CASES.forEach((c, i) => {
+  t(`病例 ${i + 1} 數字與引擎一致：${c.title}`, () => {
+    const p = PD.plan(c.input), x = c.expect;
+    assert.ok(p.ok);
+    assert.equal(p.cds.level, x.level); assert.equal(p.pct, x.pct);
+    assert.equal(p.deficit, x.deficit); assert.equal(p.remaining, x.remaining);
+    assert.equal(p.maintenance.daily, x.daily); assert.equal(p.hours, x.hours);
+    if (x.hourly !== undefined) assert.equal(p.maintenance.hourly, x.hourly);
+    assert.deepEqual(p.phases.map(f => f.rate), x.rates);
+    assert.deepEqual(p.phases.map(f => f.volume), x.vols);
+    assert.equal(p.totalVolume, x.total);
+    assert.equal(p.bolusAdvice ? p.bolusAdvice.ml : null, x.bolusMl);
+    if (x.fluidHas) assert.ok(p.fluid.includes(x.fluidHas));
+    x.warn.forEach(w => assert.ok(p.warnings.some(a => a.t.includes(w)), '缺警示 ' + w));
+  });
+  t(`病例 ${i + 1} 文字內的速率與引擎相同`, () => {
+    const text = c.steps.map(s => s.t).join(' ') + c.pitfall;
+    const p = PD.plan(c.input);
+    if (p.cds.level === 'none' || c.id === 'c8') return; // 病例 8 刻意不列速率：新生兒不應照開
+    p.phases.forEach(f => assert.ok(text.includes(f.rate.toFixed(1)), '文字缺 ' + f.rate));
+  });
+  t(`病例 ${i + 1} 的依據都在來源表`, () => c.src.forEach(s => assert.ok(SRC.some(r => r.k === s), s)));
+});
+t('所有分流都有病例', () => {
+  const ps = CASES.map(c => PD.plan(c.input));
+  ['none', 'some', 'modsev'].forEach(l => assert.ok(ps.some(p => p.cds.level === l)));
+  ['hypo', 'hyper', 'iso', 'unknown'].forEach(n => assert.ok(ps.some(p => p.natremia === n), n));
+  assert.ok(ps.some(p => p.shock)); assert.ok(ps.some(p => !p.voiding));
+  assert.ok(ps.some(p => p.preWeight)); assert.ok(ps.some(p => p.ageMonths === 0));
+});
+
+console.log('考題');
+t('20 題：基礎 10、高階 10', () => {
+  assert.equal(QUIZ.length, 20);
+  assert.equal(QUIZ.filter(q => q.lv === 'basic').length, 10);
+  assert.equal(QUIZ.filter(q => q.lv === 'adv').length, 10);
+});
+t('每題 4 選項、不重複、有解析與依據', () => QUIZ.forEach(q => {
+  assert.equal(q.o.length, 4); assert.equal(new Set(q.o).size, 4);
+  assert.ok(q.a >= 0 && q.a < 4); assert.ok(q.e && q.s);
+}));
+t('正解 A–D 各 5 題', () => [0, 1, 2, 3].forEach(k => assert.equal(QUIZ.filter(q => q.a === k).length, 5)));
+const ans = n => QUIZ[n - 1].o[QUIZ[n - 1].a];
+t('第 2 題 CDS 3 為部分脫水', () => { assert.equal(PD.cds(1, 1, 1, 0).level, 'some'); assert.ok(ans(2).includes('部分')); });
+t('第 3 題 15 kg → 1250', () => assert.ok(ans(3).includes(String(PD.maintenance(15).daily))));
+t('第 4 題 25 kg → 66.7', () => assert.ok(ans(4).includes('66.7')));
+t('第 10 題 15 kg 休克 → 300', () => assert.ok(ans(10).includes(String(P({ weight: 15, shock: true }).bolusAdvice.ml))));
+t('第 11 題前 8 小時 105.8', () => assert.ok(ans(11).includes(CASES[2] && PD.plan(CASES[2].input).phases[0].rate.toFixed(1))));
+t('第 12 題均速 56.3', () => assert.ok(ans(12).includes(PD.plan(CASES[4].input).phases[0].rate.toFixed(1))));
+t('第 13 題 158→151 超過 0.5 mEq/L/hr', () => assert.ok((158 - 151) / 6 > 0.5));
+t('第 14 題 3% 28 ml', () => assert.ok(ans(14).includes(String(CASES[5].input.weight * 2))));
+t('第 15 題 2.9 kg 維持 290', () => assert.equal(PD.maintenance(2.9).daily, 290));
+t('第 18 題 16 kg 50–80%', () => { const d = PD.maintenance(16).daily; assert.ok(ans(18).includes(`${d * 0.5}–${d * 0.8}`)); });
+t('第 19 題 Bolus 超過缺水 → 僅維持液', () => {
+  const p = P({ appearance: 1, mucous: 1, bolus: 600 });
+  assert.equal(p.remaining, 0); assert.ok(ans(19).includes(String(p.totalVolume)));
+});
+
+console.log('心智圖');
+t('8 分支、每支都有依據', () => {
+  assert.equal(MAP.branches.length, 8);
+  MAP.branches.forEach(b => { assert.ok(b.leaves.length >= 4); b.leaves.forEach(l => { assert.ok(/^<b>.*?<\/b>/.test(l.t)); assert.ok(l.s); }); });
+});
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
