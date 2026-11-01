@@ -505,7 +505,7 @@ var PD = (function () {
     }
     if (nat === 'hypo') {
       warnings.push({ lv: 'warning', t: '低血鈉脫水 (Na ' + na + ')：使用等張液，血鈉上升 ≤8–10 mEq/L/24hr，每 4–6 小時監測 Na。' });
-      if (na < 125) warnings.push({ lv: 'danger', t: 'Na <125 或有痙攣、意識改變：3% NaCl 2 ml/kg（上限 100 ml）10 分鐘推注，症狀持續可重複至 3 次。' });
+      warnings.push({ lv: na < 125 ? 'danger' : 'warning', t: (na < 125 ? 'Na <125：立即確認' : '請確認') + '有無抽搐、意識改變等神經症狀。有症狀 → 3% NaCl 2 ml/kg（上限 100 ml）10 分鐘推注，症狀持續可重複至 3 次；無症狀 → 不需常規推注，使用等張液並追蹤 Na。' });
     }
     if (nat === 'unknown' && (severe || c.level === 'some')) warnings.push({ lv: 'secondary', t: '建議檢測血清電解質（Na、K）與血糖，以排除高/低血鈉脫水。' });
     if (!voiding) warnings.push({ lv: 'secondary', t: '尚未確認排尿：先不加 KCl，排尿後改為含 KCl 20 mEq/L 之輸液。' });

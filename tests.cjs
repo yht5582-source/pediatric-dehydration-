@@ -80,8 +80,16 @@ t('Na 155 Na 給予量以 24h 計', () => assert.equal(P({ appearance: 1, sodium
 t('Na 150 為高血鈉', () => assert.equal(PD.natremia(150), 'hyper'));
 t('Na 149 等張', () => assert.equal(P({ sodium: 149 }).hours, 24));
 t('Na 172 → ICU 警示', () => assert.ok(P({ sodium: 172 }).warnings.some(w => /≥170/.test(w.t))));
-t('Na 122 → 3% NaCl 警示', () => assert.ok(P({ sodium: 122 }).warnings.some(w => /3% NaCl/.test(w.t))));
-t('Na 128 低血鈉但無 3%', () => { const p = P({ sodium: 128 }); assert.equal(p.natremia, 'hypo'); assert.ok(!p.warnings.some(w => /3% NaCl/.test(w.t))); });
+const hyperT = p => p.warnings.find(w => /3% NaCl/.test(w.t));
+t('Na 122 → 3% NaCl 以有症狀為條件，紅色警示', () => {
+  const w = hyperT(P({ sodium: 122 }));
+  assert.equal(w.lv, 'danger'); assert.ok(/有症狀 → 3% NaCl/.test(w.t)); assert.ok(/無症狀 → 不需常規推注/.test(w.t));
+});
+t('Na 128 → 同樣條件式提示，非紅色', () => {
+  const p = P({ sodium: 128 }); assert.equal(p.natremia, 'hypo');
+  assert.equal(hyperT(p).lv, 'warning'); assert.ok(/有症狀 → 3% NaCl/.test(hyperT(p).t));
+});
+t('Na 130 不顯示 3%', () => assert.equal(hyperT(P({ sodium: 130 })), undefined));
 
 console.log('輸入驗證');
 t('體重空白 → error', () => assert.equal(P({ weight: '' }).ok, false));

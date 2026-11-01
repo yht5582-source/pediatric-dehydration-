@@ -1,5 +1,5 @@
 // 離線快取：同源檔案與 Bootstrap CSS，stale-while-revalidate
-const CACHE = 'peds-fluid-v3';
+const CACHE = 'peds-fluid-v4';
 const ASSETS = [
   './',
   './index.html',
